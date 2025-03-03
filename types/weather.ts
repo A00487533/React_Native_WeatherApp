@@ -1,6 +1,5 @@
 export interface WeatherData {
-    temperature: number;
+    id: number;
     locationName: string;
     weatherCondition: string;
-    conditionIcon: string;
-  }
+    }

@@ -1,21 +1,33 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ActivityIndicator } from 'react-native';
+import { saveLocation,createTable,getLocationCount } from '@/database/database';
+
 
 function searchWeatherScreen() {
   const [city, setCity] = useState('');
   const [weather, setWeather] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<any>(null);
+  const [locationcount, setLocationCount] = useState<Number>(0);
+
+  useEffect(() => {
+    const initialise = async () => {
+        await createTable();
+        await fetchLocations();
+
+      
+    }
+    console.log('Initialising database');
+    initialise();
+  }, []);
+
 
   const fetchWeather = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      // Fetch coordinates for the city
-      const geoResponse = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1`
-      );
+      const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1`);
       const geoData = await geoResponse.json();
 
       if (!geoData.results || geoData.results.length === 0) {
@@ -26,7 +38,6 @@ function searchWeatherScreen() {
 
       const { latitude, longitude } = geoData.results[0];
 
-      // Fetch weather for the city
       const weatherResponse = await fetch(
         `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`
       );
@@ -39,26 +50,50 @@ function searchWeatherScreen() {
     }
   };
 
+  
+  const fetchLocations = async () => {
+    try {
+      const savedLocations = await getLocationCount();
+      setLocationCount(savedLocations);
+    } catch (error) {
+      console.error('Fetch locations error:', error);
+    }
+  };
+
+
+  const handleSaveLocation = async () => {
+    try{
+
+      if (city) {
+        await saveLocation(city);
+        alert('Location saved!');
+      }
+    } catch (error) {
+      console.log('Failed to save location:', error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Search Weather</Text>
       <TextInput
         style={styles.input}
         placeholder="Enter city name"
+        placeholderTextColor="#888"
         value={city}
         onChangeText={setCity}
       />
-      <Button title="Get Weather" onPress={fetchWeather} />
-      
-      {loading && <ActivityIndicator size="large" />}
+      <Button title="Get Weather" onPress={fetchWeather} color="#1e90ff" />
+
+      {loading && <ActivityIndicator size="large" color="#1e90ff" />}
       {error && <Text style={styles.error}>{error}</Text>}
-      
+
       {weather && (
         <View style={styles.weatherInfo}>
           <Text>Temperature: {weather.temperature}°C</Text>
           <Text>Wind Speed: {weather.windspeed} km/h</Text>
           <Text>Weather Code: {weather.weathercode}</Text>
-          <Button title="Save Location" onPress={() => console.log('Save feature next!')} />
+          <Button title="Save Location" disabled={locationcount == 4 || city.trim() === ''} onPress={handleSaveLocation} color="#32cd32" />
         </View>
       )}
     </View>
@@ -70,25 +105,28 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     justifyContent: 'center',
+    backgroundColor: 'white',
   },
   header: {
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
+    color: '#fff',
   },
   input: {
     height: 40,
-    borderColor: '#ccc',
+    borderColor: '#444',
     borderWidth: 1,
     marginBottom: 10,
     paddingHorizontal: 10,
     borderRadius: 5,
+    color: '#000',
   },
   weatherInfo: {
     marginTop: 20,
   },
   error: {
-    color: 'red',
+    color: '#ff4c4c',
     marginTop: 10,
   },
 });
