@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ActivityIndicator } from 'react-native';
-import { saveLocation,createTable,getLocationCount } from '@/database/database';
-
+import { saveLocation, createTable, getLocationCount } from '@/database/database';
+import { useFocusEffect } from '@react-navigation/native';  // Import useFocusEffect
 
 function searchWeatherScreen() {
   const [city, setCity] = useState('');
@@ -10,16 +10,18 @@ function searchWeatherScreen() {
   const [error, setError] = useState<any>(null);
   const [locationcount, setLocationCount] = useState<Number>(0);
 
-  useEffect(() => {
-    const initialise = async () => {
-        await createTable();
-        await fetchLocations();
 
-      
-    }
-    console.log('Initialising database');
-    initialise();
-  }, []);
+
+  useFocusEffect(
+      React.useCallback(() => {
+        const initialise = async () => {
+          await createTable();
+          await fetchLocations();
+      }
+      console.log('Initialising database');
+      initialise();
+      }, [])  // Empty array means it runs only when the screen is focused
+    );
 
 
   const fetchWeather = async () => {
@@ -50,7 +52,6 @@ function searchWeatherScreen() {
     }
   };
 
-  
   const fetchLocations = async () => {
     try {
       const savedLocations = await getLocationCount();
@@ -60,10 +61,8 @@ function searchWeatherScreen() {
     }
   };
 
-
   const handleSaveLocation = async () => {
     try{
-
       if (city) {
         await saveLocation(city);
         alert('Location saved!');
@@ -90,9 +89,9 @@ function searchWeatherScreen() {
 
       {weather && (
         <View style={styles.weatherInfo}>
-          <Text>Temperature: {weather.temperature}°C</Text>
-          <Text>Wind Speed: {weather.windspeed} km/h</Text>
-          <Text>Weather Code: {weather.weathercode}</Text>
+          <Text style={styles.weatherText}>Temperature: {weather.temperature}°C</Text>
+          <Text style={styles.weatherText}>Wind Speed: {weather.windspeed} km/h</Text>
+          <Text style={styles.weatherText}>Weather Code: {weather.weathercode}</Text>
           <Button title="Save Location" disabled={locationcount == 4 || city.trim() === ''} onPress={handleSaveLocation} color="#32cd32" />
         </View>
       )}
@@ -105,29 +104,39 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     justifyContent: 'center',
-    backgroundColor: 'white',
+    backgroundColor: '#000', // Black background to maintain consistency
   },
   header: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#fff',
+    marginBottom: 20,
+    color: '#fff', // White text for the header
+    textAlign: 'center',
   },
   input: {
     height: 40,
     borderColor: '#444',
     borderWidth: 1,
-    marginBottom: 10,
+    marginBottom: 15,
     paddingHorizontal: 10,
     borderRadius: 5,
-    color: '#000',
+    color: '#fff', // White text inside the input field
   },
   weatherInfo: {
     marginTop: 20,
+    padding: 10,
+    backgroundColor: '#333', // Dark background for the weather info box
+    borderRadius: 5,
+  },
+  weatherText: {
+    fontSize: 18,
+    color: '#fff', // White text for weather information
+    marginVertical: 5,
   },
   error: {
-    color: '#ff4c4c',
+    color: '#ff4c4c', // Red text for errors
     marginTop: 10,
+    textAlign: 'center',
   },
 });
 

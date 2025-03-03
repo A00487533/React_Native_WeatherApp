@@ -35,15 +35,15 @@ function weatherScreen() {
     }
   };
 
-  if (loading) return <ActivityIndicator size="large" />;
-  if (error) return <Text>{error}</Text>;
+  if (loading) return <ActivityIndicator size="large" color="#ff4c4c" />;
+  if (error) return <Text style={styles.errorText}>{error}</Text>;
 
   return (
     <View style={styles.screenContainer}>
       <Text style={styles.header}>Current Location Weather</Text>
-      <Text>Temperature: {weather.temperature}°C</Text>
-      <Text>Wind Speed: {weather.windspeed} km/h</Text>
-      <Text>Weather Code: {weather.weathercode}</Text>
+      <Text style={styles.weatherText}>Temperature: {weather.temperature}°C</Text>
+      <Text style={styles.weatherText}>Wind Speed: {weather.windspeed} km/h</Text>
+      <Text style={styles.weatherText}>Weather Code: {weather.weathercode}</Text>
     </View>
   );
 }
@@ -53,11 +53,26 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#000', // Black background for consistency
+    padding: 20,
   },
   header: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 10,
+    color: '#fff', // White header text
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  weatherText: {
+    fontSize: 18,
+    color: '#fff', // White text for weather details
+    marginVertical: 5,
+  },
+  errorText: {
+    color: '#ff4c4c', // Red text for errors
+    fontSize: 18,
+    textAlign: 'center',
+    marginTop: 20,
   },
 });
 
